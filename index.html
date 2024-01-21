@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>GraphSim</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" media="screen" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="main.js"></script>
+  </head>
+  <body>
+    <div id="container-row">
+      <div id="canvas">
+        <canvas id="myChart"></canvas>
+      </div>
+
+      <div id="div-right">
+        <div id="variance" class="variable">
+          <h3>Variance</h3>
+          <input
+            id="varianceSlider"
+            oninput="updateVariance()"
+            type="range"
+            min="0"
+            max="0.5"
+            value="0"
+            step="0.01"
+          />
+          <p id="varianceValue">0%</p>
+        </div>
+
+        <div id="variance" class="variable">
+          <h3>Starting Value</h3>
+          <input
+            id="startingValue"
+            type="number"
+            value="100"
+            min="0"
+            max="0.5"
+            class="inputNumber"
+            placeholder="e.g. 5000"
+          />
+        </div>
+
+        <div id="variance" class="variable">
+          <h3>Number of events</h3>
+          <div id="options">
+            <p class="active" id="optionSlider" onclick="optionSlider()">
+              Slider
+            </p>
+            <p id="optionInput" onclick="optionInput()">Input</p>
+          </div>
+          <div id="eventsInputs">
+            <input
+              id="eventsSlider"
+              oninput="updateEvents()"
+              type="range"
+              min="5"
+              max="1000"
+              value="0"
+              step="1"
+            />
+            <input
+              id="eventsNumberInput"
+              type="number"
+              min="0"
+              max="0.5"
+              class="inputNumber"
+              placeholder="Custom"
+            />
+          </div>
+
+          <p id="eventsValue">5</p>
+        </div>
+
+        <button id="simulate" class="button">Simulate</button>
+      </div>
+
+      <script>
+        var lineData = [];
+        var x = [];
+
+        const data = {
+          labels: x,
+          datasets: [
+            {
+              label: "Variation over time",
+              data: lineData,
+              fill: false,
+              borderColor: "rgb(69, 131, 211)",
+              tension: 0,
+            },
+          ],
+        };
+
+        const config = {
+          type: "line",
+          data: data,
+          options: {
+            hover: {
+              mode: "nearest",
+              intersect: false,
+              animationDuration: 0,
+              axis: "x",
+              skipNull: true,
+            },
+            scales: {
+              x: {
+                title: {},
+                beginAtZero: true,
+              },
+              y: {
+                beginAtZero: true,
+                title: {},
+              },
+            },
+          },
+        };
+
+        const myLineChart = new Chart(
+          document.getElementById("myChart"),
+          config
+        );
+
+        function updateChart() {
+          myLineChart.update();
+          x.length = 0;
+          lineData.length = 0;
+        }
+
+        function updateVariance() {
+          sliderValue = document.getElementById("varianceSlider").value;
+          document.getElementById("varianceValue").innerText =
+            (sliderValue * 100).toFixed(0) + "%";
+        }
+
+        function updateEvents() {
+          eventsSliderValue = document.getElementById("eventsSlider").value;
+          document.getElementById("eventsValue").innerText =
+            eventsSliderValue.toLocaleString();
+        }
+
+        var simulateButton = document.getElementById("simulate");
+
+        function calculate(start, variance, events) {
+          let varianceOptions = [variance, variance * -1];
+          lineData.push(parseFloat(start));
+
+          for (let i = 0; i <= events; i++) {
+            let randomVariance =
+              varianceOptions[
+                Math.floor(Math.random() * varianceOptions.length)
+              ];
+            let newPoint =
+              lineData[lineData.length - 1] +
+              lineData[lineData.length - 1] * randomVariance;
+            console.log(newPoint);
+            lineData.push(newPoint);
+            x.push(i);
+          }
+
+          updateChart();
+
+          const scrollOptions = {
+            top: 0,
+            behavior: "smooth",
+          };
+          window.scrollTo(scrollOptions);
+        }
+
+        simulateButton.addEventListener("click", function () {
+          const optionSlider = document.getElementById("optionSlider");
+          const optionInput = document.getElementById("optionInput");
+
+          const varianceSlider = document.getElementById("varianceSlider");
+          const startingValue = document.getElementById("startingValue");
+          const eventsNumberInput =
+            document.getElementById("eventsNumberInput");
+          const eventsSlider = document.getElementById("eventsSlider");
+
+          if (optionInput.classList.contains("active")) {
+            calculate(
+              startingValue.value,
+              varianceSlider.value,
+              eventsNumberInput.value
+            );
+          } else if (optionSlider.classList.contains("active")) {
+            calculate(
+              startingValue.value,
+              varianceSlider.value,
+              eventsSlider.value
+            );
+          }
+        });
+      </script>
+    </div>
+  </body>
+</html>
